@@ -1,0 +1,52 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="rmBtn">
+        <button class="joinRm">RoomJD</button>
+        <!-- <button class="joinRm">Room AA</button> -->
+    </div>
+
+    <ul id="messages"></ul>
+
+    <form action="" id="msgBox">
+        <input id="m" autocomplete="off" />
+        <button>Send</button>
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.slim.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+        $(function () {
+
+            var socket = io();
+            $("#rmBtn").on('click', ".joinRm", function () {
+                let rm = $(this).html();
+                console.log(rm)
+                socket.emit('subscribe', rm);
+            });
+
+            socket.on('join room', function (msg) {
+                $('#messages').append($('<li>').text(msg));
+            });
+
+            $('#msgBox').submit(function () {
+                socket.emit('chat message', $('#m').val());
+                console.log($('#m').val());
+                $('#m').val('');
+                return false;
+            });
+
+            socket.on('chat message', function (msg) {
+                $('#messages').append($('<li>').text(msg));
+            });
+
+        });
+    </script>
+
+</body>
+
+</html>
