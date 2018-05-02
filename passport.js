@@ -17,7 +17,7 @@ module.exports = (app) => {
             callbackURL: "/auth/facebook/callback"
         },
         function (accessToken, refreshToken, profile, cb) {
-            return cb(null,{profile:profile,accessToken:accessToken});
+            return cb(null, { profile: profile, accessToken: accessToken });
         }
     ));
 
@@ -67,11 +67,25 @@ module.exports = (app) => {
     });
 
     passport.deserializeUser((sessionUser, done) => {
-        let user = users.find((u) => u.email == sessionUser.email);
-        if (user == null) {
-            done(new Error('Wrong user email.'));
+        console.log("sessionUser", sessionUser);
+        if (sessionUser.profile != null) {
+            if (sessionUser.profile.provider == 'facebook') {
+                if (sessionUser.profile) {
+                    done(null, sessionUser.profile)
+                }
+                else {
+                    done(new Error('facebook sessionUser failed.'));
+                }
+            }
         }
-
-        done(null, user);
+        else if (sessionUser.email) {
+            let user = users.find((u) => u.email == sessionUser.email);
+            if (user == null) {
+                done(new Error('wrong email.'));
+            }
+            else {
+                done(null, user);
+            }
+        }
     });
 };

@@ -5,27 +5,14 @@ const app = express();
 
 const fs = require('fs');
 const http = require('http').Server(app);
-// const https = require('https')
-// const options = {
-//     key: fs.readFileSync('localhost.key', 'utf-8'),
-//     cert: fs.readFileSync('localhost.cert', 'utf-8')
-// };
-// const serverPort = 443;
-// const server = https.createServer(options, app);
 
-const io = require('socket.io')(http);
-
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static('public'));
-
-// passport / social login
-const session = require('express-session');
-const setupPassport = require('./passport');
-app.use(session({
-    secret: 'supersecret'
-}));
-setupPassport(app);
+const https = require('https')
+const options = {
+    key: fs.readFileSync('localhost.key', 'utf-8'),
+    cert: fs.readFileSync('localhost.cert', 'utf-8')
+};
+const serverPort = 443;
+const server = https.createServer(options, app);
 
 // redis
 const redis = require("redis");
@@ -36,6 +23,32 @@ const client = redis.createClient({
 client.on("error", function (err) {
     console.log(`REDIS: ${err}`);
 });
+
+const io = require('socket.io')(http);
+
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static('public'));
+
+// passport / social login
+const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
+const setupPassport = require('./passport');
+
+const sessionStore = new RedisStore({
+    client: client,
+    unset: "destroy"
+  });
+
+const settings = {
+    store: sessionStore,
+    secret: "supersecret",
+    cookie: { "path": '/', "httpOnly": true, "secure": false,  "maxAge": null }
+  }
+
+  app.use(session(settings));
+
+setupPassport(app);
 
 // routing
 const router = require('./router')(express);
@@ -60,6 +73,6 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => console.log('a user left us'));
 });
 
-// server.listen(serverPort);
+server.listen(serverPort);
 
 http.listen(8080);
