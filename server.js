@@ -2,10 +2,19 @@
 //express app
 const express = require('express');
 const app = express();
+
 const fs = require('fs');
-const https = require('https')
 const http = require('http').Server(app);
-const io = require('socket.io')(https);
+// const https = require('https')
+// const options = {
+//     key: fs.readFileSync('localhost.key', 'utf-8'),
+//     cert: fs.readFileSync('localhost.cert', 'utf-8')
+// };
+// const serverPort = 443;
+// const server = https.createServer(options, app);
+
+const io = require('socket.io')(http);
+
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
@@ -51,10 +60,6 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => console.log('a user left us'));
 });
 
-// https.createServer({
-//     key: fs.readFileSync('localhost.key', 'utf-8'),
-//     cert: fs.readFileSync('localhost.cert', 'utf-8')
-// }, app).listen(8080);
-
+// server.listen(serverPort);
 
 http.listen(8080);

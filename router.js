@@ -11,7 +11,7 @@ module.exports = (express) => {
         }
         res.redirect('/login');
     }
-    
+
     router.get('/', isLoggedIn, (req, res) => {
         res.redirect('/room');
     });
@@ -25,17 +25,22 @@ module.exports = (express) => {
         failureRedirect: '/error'
     }));
 
-    router.get("/auth/facebook",passport.authenticate('facebook',{
-        successRedirect: '/room',
-        failureRedirect: '/login',
-        scope: ['user_friends', 'manage_pages'] 
+    router.get("/auth/facebook", passport.authenticate('facebook', {
+        // successRedirect: '/room',
+		// failureRedirect: '/login',
+		authType: 'rerequest',
+        scope: ['user_friends', 'manage_pages']
     }));
-    
-    router.get("/auth/facebook/callback",passport.authenticate('facebook',{
-        failureRedirect: "/"
-    }),(req,res)=>res.redirect('/room'));
-    
+
+    router.get("/auth/facebook/callback", passport.authenticate('facebook', {
+        failureRedirect: "/login"
+    }), (req, res) => {
+        console.log('FB login ok, now redirect to room.');
+        res.redirect('/room');
+    });
+
     router.get('/room', (req, res) => {
+        console.log('redir');
         res.sendFile(__dirname + '/index.html');
     });
 
