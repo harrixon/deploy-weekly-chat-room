@@ -14,7 +14,7 @@ module.exports = (app) => {
         {
             clientID: process.env.FACEBOOK_ID,
             clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-            callbackURL: "/auth/facebook/callback"
+            callbackURL: "https://harrixon.stream/auth/facebook/callback"
         },
         function (accessToken, refreshToken, profile, cb) {
             return cb(null, { profile: profile, accessToken: accessToken });
