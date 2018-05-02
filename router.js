@@ -24,7 +24,7 @@ module.exports = (express) => {
     });
 
     router.post('/login', passport.authenticate('local-login', {
-        successRedirect: '/',
+        successRedirect: '/room',
         failureRedirect: '/error'
     }));
 
