@@ -2,11 +2,14 @@
 //express app
 const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static('public'));
 
-const fs = require('fs');
 const http = require('http').Server(app);
 
 // const https = require('https')
+// const fs = require('fs');
 // const options = {
 //     key: fs.readFileSync('localhost.key', 'utf-8'),
 //     cert: fs.readFileSync('localhost.cert', 'utf-8')
@@ -26,28 +29,20 @@ client.on("error", function (err) {
 
 const io = require('socket.io')(http);
 
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static('public'));
-
-// passport / social login
+// passport / social login / session
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
 const setupPassport = require('./passport');
-
 const sessionStore = new RedisStore({
     client: client,
     unset: "destroy"
-  });
-
+});
 const settings = {
     store: sessionStore,
     secret: "supersecret",
-    cookie: { "path": '/', "httpOnly": true, "secure": false,  "maxAge": null }
-  }
-
-  app.use(session(settings));
-
+    cookie: { "path": '/', "httpOnly": true, "secure": false, "maxAge": null }
+}
+app.use(session(settings));
 setupPassport(app);
 
 // routing
@@ -57,7 +52,7 @@ app.use("/", router);
 // socket.io
 io.on('connection', (socket) => {
     let rm;
-    socket.on('subscribe', function(room){
+    socket.on('subscribe', function (room) {
         rm = room;
         socket.join(rm);
         console.log(`a user has joined room: ${rm}`);
@@ -65,7 +60,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat message', function (msg) {
-        client.lpush(rm, msg, function(err, data){if (err) {throw err;}});
+        client.lpush(rm, msg, function (err, data) { if (err) { throw err; } });
         console.log('message: ' + msg);
         io.to(rm).emit('chat message', msg);
     });
@@ -73,6 +68,7 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => console.log('a user left us'));
 });
 
+// https
 // server.listen(serverPort);
 
 http.listen(8080);
