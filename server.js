@@ -6,13 +6,13 @@ const app = express();
 const fs = require('fs');
 const http = require('http').Server(app);
 
-const https = require('https')
-const options = {
-    key: fs.readFileSync('localhost.key', 'utf-8'),
-    cert: fs.readFileSync('localhost.cert', 'utf-8')
-};
-const serverPort = 443;
-const server = https.createServer(options, app);
+// const https = require('https')
+// const options = {
+//     key: fs.readFileSync('localhost.key', 'utf-8'),
+//     cert: fs.readFileSync('localhost.cert', 'utf-8')
+// };
+// const serverPort = 443;
+// const server = https.createServer(options, app);
 
 // redis
 const redis = require("redis");
@@ -73,6 +73,6 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => console.log('a user left us'));
 });
 
-server.listen(serverPort);
+// server.listen(serverPort);
 
 http.listen(8080);
