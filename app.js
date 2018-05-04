@@ -33,6 +33,7 @@ const settings = {
     store: sessionStore,
     secret: "supersecret",
     cookie: { "path": '/', "httpOnly": true, "secure": false, "maxAge": null }
+    // maxAge : 10 * 60 * 1000 ms
 }
 
 app.use(expressSession(settings));

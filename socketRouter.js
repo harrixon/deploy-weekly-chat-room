@@ -37,11 +37,9 @@ class SocketRouter {
     }
 
     onJoinRoom(socket) {
-        // socket.on('subscribe', room => {
-            socket.join(this.chatroomName);
-            console.log(`a user has joined room: ${this.chatroomName}`);
-            this.io.to(this.chatroomName).emit('join room', `new user in room: ${this.chatroomName}.`);
-        // });
+        socket.join(this.chatroomName);
+        console.log(`a user has joined room: ${this.chatroomName}`);
+        this.io.to(this.chatroomName).emit('join room', `new user in room: ${this.chatroomName}.`);
 
         this.fetchMsg(socket, 0);
     }
@@ -57,7 +55,7 @@ class SocketRouter {
     }
 
     fetchMsg(socket, count) {
-        this.redisClient.lrange(this.chatroomName, count, count + 20, (err, messages) => {
+        this.redisClient.lrange(this.chatroomName, count, count + 10, (err, messages) => {
             if (err) {
                 console.log(err);
                 this.io.emit('read chat error');
@@ -68,7 +66,7 @@ class SocketRouter {
             //     user: this.user,
             //     msg: messages
             // };
-            this.io.to(this.chatroomName).emit('initial messages', messages);
+            this.io.to(this.chatroomName).emit('old message', messages);
         });
     }
 

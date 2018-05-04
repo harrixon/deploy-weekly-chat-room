@@ -48,6 +48,13 @@
                 $('#messages').append($('<li>').text(msg));
             });
 
+            socket.on('old message', function (msg) {
+                console.log(`received old msg: ${msg}`)
+                msg.forEach(element => {
+                    $('#messages').append($('<li>').text(element));
+                });
+            });
+
         });
     </script>
 

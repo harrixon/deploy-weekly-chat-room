@@ -18,7 +18,9 @@ html :
 
 login: FB/ passport - socket.io listen?
 
-deployed : nginx willm deal with http(s) , no need to set up yourself
+deployed : 
+    nginx willm deal with http(s) , no need to set up yourself
+    may need to restart redis : `sudo redis-server`
 
 dev : 
     set up https to test FB login :
