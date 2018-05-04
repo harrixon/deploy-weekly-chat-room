@@ -37,7 +37,7 @@ dev :
     server.listen(serverPort);
     ```
     
-    use `sudo node server`
+    use `sudo node app`
 
     Valid OAuth Redirect URIs : 
         https://localhost/auth/facebook/callback ,
