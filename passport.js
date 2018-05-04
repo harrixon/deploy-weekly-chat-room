@@ -2,8 +2,8 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
-const users = require('./users');
-const bcrypt = require('./bcrypt');
+const users = require('./data/users');
+const bcrypt = require('./utils/bcrypt');
 require('dotenv').config();
 
 module.exports = (app) => {
@@ -25,7 +25,6 @@ module.exports = (app) => {
     passport.use('local-login', new LocalStrategy(
         (email, password, done) => {
             let user = users.find((user) => user.email == email);
-            // console.log(user);
             if (user == null) {
                 return done(null, false, { message: 'Incorrect credentials, no such email.' });
             }
@@ -54,7 +53,7 @@ module.exports = (app) => {
                             email: email,
                             password: hash
                         };
-                        console.log(newUser);
+                        // console.log(newUser);
                         users.push(newUser);
                         return done(null, newUser);
                     })
@@ -68,7 +67,7 @@ module.exports = (app) => {
     });
 
     passport.deserializeUser((sessionUser, done) => {
-        console.log("sessionUser", sessionUser);
+        console.log("deserialize sessionUser \n", sessionUser);
         if (sessionUser.profile != null) {
             if (sessionUser.profile.provider == 'facebook') {
                 if (sessionUser.profile) {

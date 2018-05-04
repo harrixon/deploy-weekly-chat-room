@@ -19,6 +19,7 @@ html :
 login: FB/ passport - socket.io listen?
 
 deployed : nginx willm deal with http(s) , no need to set up yourself
+
 dev : 
     set up https to test FB login :
     (this will cause socket.io to fail)

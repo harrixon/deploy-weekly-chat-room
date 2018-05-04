@@ -6,7 +6,6 @@ module.exports = (express) => {
     const router = express.Router();
 
     function isLoggedIn(req, res, next) {
-        // console.log(req.isAuthenticated());
         if (req.isAuthenticated()) {
             return next();
         }
@@ -14,12 +13,10 @@ module.exports = (express) => {
     }
 
     router.get('/', isLoggedIn, (req, res) => {
-        // console.log('right b4 redir to room');
         res.redirect('/room');
     });
 
     router.get('/login', (req, res) => {
-        // console.log('login page')
         res.sendFile(__dirname + '/login.html');
     });
 
@@ -29,16 +26,13 @@ module.exports = (express) => {
     }));
 
     router.get("/auth/facebook", passport.authenticate('facebook', {
-        // successRedirect: '/room',
-		// failureRedirect: '/login',
-		authType: 'rerequest',
+        authType: 'rerequest',
         scope: ['user_friends', 'manage_pages']
     }));
 
     router.get("/auth/facebook/callback", passport.authenticate('facebook', {
         failureRedirect: "/login"
-    }), (req, res) => { 
-        // console.log('FB login ok, now redirect to room.');
+    }), (req, res) => {
         res.redirect('/room');
     });
 
@@ -48,6 +42,11 @@ module.exports = (express) => {
 
     router.get('/error', (req, res) => {
         res.send('You are not logged in!');
+    });
+
+    router.get('/logout', (req, res) => {
+        req.logout();
+        res.redirect('/');
     });
 
     return router;
