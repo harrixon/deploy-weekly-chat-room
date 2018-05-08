@@ -7,7 +7,9 @@ const bcrypt = require('./utils/bcrypt');
 require('dotenv').config();
 
 module.exports = (app) => {
+    console.log("passport init");
     app.use(passport.initialize());
+    console.log("passport session");
     app.use(passport.session());
 
     passport.use('facebook', new FacebookStrategy(
@@ -18,7 +20,7 @@ module.exports = (app) => {
             // callbackURL: process.env.FACEBOOK_OAUTH_CBURL_DEV
         },
         function (accessToken, refreshToken, profile, cb) {
-            return cb(null, { profile: profile, accessToken: accessToken });
+            return cb(null, { profile: profile, accessToken: accessToken, refreshToken: refreshToken });
         }
     ));
 
@@ -41,33 +43,34 @@ module.exports = (app) => {
         }
     ));
 
-    passport.use('local-signup', new LocalStrategy(
-        (email, password, done) => {
-            let user = users.find((user) => user.email == email);
-            if (user) {
-                return done(null, false, { message: 'Email already taken' });
-            } else {
-                bcrypt.hashPassword(password)
-                    .then(hash => {
-                        const newUser = {
-                            email: email,
-                            password: hash
-                        };
-                        // console.log(newUser);
-                        users.push(newUser);
-                        return done(null, newUser);
-                    })
-                    .catch(err => console.log(err));
-            }
-        }
-    ));
+    // passport.use('local-signup', new LocalStrategy(
+    //     (email, password, done) => {
+    //         let user = users.find((user) => user.email == email);
+    //         if (user) {
+    //             return done(null, false, { message: 'Email already taken' });
+    //         } else {
+    //             bcrypt.hashPassword(password)
+    //                 .then(hash => {
+    //                     const newUser = {
+    //                         email: email,
+    //                         password: hash
+    //                     };
+    //                     // console.log(newUser);
+    //                     users.push(newUser);
+    //                     return done(null, newUser);
+    //                 })
+    //                 .catch(err => console.log(err));
+    //         }
+    //     }
+    // ));
 
-    passport.serializeUser((user, done) => {
-        done(null, user);
+    passport.serializeUser((sessionUser, done) => {
+        console.log("Serialize : \n", sessionUser);
+        done(null, sessionUser);
     });
 
     passport.deserializeUser((sessionUser, done) => {
-        console.log("deserialize sessionUser \n", sessionUser);
+        console.log("Deserialize sessionUser : \n", sessionUser, "\n ===");
         if (sessionUser.profile != null) {
             if (sessionUser.profile.provider == 'facebook') {
                 if (sessionUser.profile) {

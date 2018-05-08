@@ -1,19 +1,27 @@
 //router.js
-// const express = require('express');
 const passport = require('passport');
 
-module.exports = (express) => {
+const SocketRouter = require("./socketRouter");
+const io = require("./app").io;
+const redisClient = require("./app").redisClient;
+var socketRouterList = {};
+
+module.exports = (express, app, io) => {
     const router = express.Router();
 
-    function isLoggedIn(req, res, next) {
-        if (req.isAuthenticated()) {
-            return next();
-        }
-        res.redirect('/login');
-    }
+    // function isLoggedIn(req, res, next) {
+    //     if (req.isAuthenticated()) {
+    //         return next();
+    //     }
+    //     res.redirect('/login');
+    // }
 
-    router.get('/', isLoggedIn, (req, res) => {
-        res.redirect('/room');
+    // router.get('/', isLoggedIn, (req, res) => {
+    //     res.redirect('/lobby');
+    // });
+
+    router.get('/', (req, res) => {
+        res.redirect('/login');
     });
 
     router.get('/login', (req, res) => {
@@ -21,7 +29,7 @@ module.exports = (express) => {
     });
 
     router.post('/login', passport.authenticate('local-login', {
-        successRedirect: '/room',
+        successRedirect: '/lobby',
         failureRedirect: '/error'
     }));
 
@@ -33,11 +41,11 @@ module.exports = (express) => {
     router.get("/auth/facebook/callback", passport.authenticate('facebook', {
         failureRedirect: "/login"
     }), (req, res) => {
-        res.redirect('/room');
+        res.redirect('/lobby');
     });
 
-    router.get('/room', (req, res) => {
-        res.sendFile(__dirname + '/room.html');
+    router.get('/lobby', (req, res) => {
+        res.sendFile(__dirname + '/lobby.html');
     });
 
     router.get('/error', (req, res) => {

@@ -6,8 +6,8 @@
 
 <body>
     <div id="rmBtn">
-        <button class="joinRm">RoomJD</button>
-        <!-- <button class="joinRm">Room AA</button> -->
+        <button class="joinRm">rma</button>
+        <button class="joinRm">rmb</button>
     </div>
     <form action="/logout" method="get" id="logout">
         <button type="submit">LOGOUT</button>
@@ -15,7 +15,7 @@
 
     <ul id="messages"></ul>
 
-    <form action="" id="msgBox">
+    <form action="" id="msgBox" class="hide">
         <input id="m" autocomplete="off" />
         <button>Send</button>
     </form>
@@ -27,12 +27,15 @@
 
             var socket = io();
             $("#rmBtn").on('click', ".joinRm", function () {
+                $("#msgBox").removeClass("hide");
+                socket.emit('leaveRm', "leaveRm");
                 let rm = $(this).html();
                 console.log(rm)
                 socket.emit('subscribe', rm);
             });
 
             socket.on('join room', function (msg) {
+                $('#messages').empty();
                 $('#messages').append($('<li>').text(msg));
             });
 
@@ -44,14 +47,17 @@
             });
 
             socket.on('chat message', function (msg) {
-                console.log(`received: ${msg}`)
-                $('#messages').append($('<li>').text(msg));
+                console.log(`received: ${msg}`);
+                let display = `${msg.user} : ${msg.msg}`;
+                $('#messages').append($('<li>').text(display));
             });
 
             socket.on('old message', function (msg) {
                 console.log(`received old msg: ${msg}`)
                 msg.forEach(element => {
-                    $('#messages').append($('<li>').text(element));
+                    let parsed = JSON.parse(element);
+                    let text = `${parsed.user} : ${parsed.msg}`;
+                    $('#messages').append($('<li>').text(text));
                 });
             });
 

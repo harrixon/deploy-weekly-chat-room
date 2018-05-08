@@ -67,3 +67,7 @@ body {
 #messages li:nth-child(odd) {
     background: #eee;
 }
+
+.hide {
+    display: none;
+}

@@ -1,6 +1,6 @@
 # deploy-weekly-chat-room
 
-#Chat-Room
+### Chat-Room
 communication channels : web socket
 store the messages : redis
 facebook authentcation : social login , passport
@@ -12,12 +12,31 @@ msg : jquery / socket.io / redis
 create / join / leave rm : jquery / socket.io / redis
 
 html : 
-/ index.html
-/login
-/rm
+/index.html
+/room.html
 
-login: FB/ passport - socket.io listen?
+app :
+express
+body-parser
+http
+io
+redis
+redis-store
+socket.io.session
+passport
 
+router :
+get     /
+get     /login
+post    /login
+get     /auth/facebook
+get     /auth/facebook/callback
+get     /room
+get     /logout
+get     /error
+
+---
+### Deploy &Dev
 deployed : 
     nginx willm deal with http(s) , no need to set up yourself
     may need to restart redis : `sudo redis-server`
@@ -42,3 +61,33 @@ dev :
     Valid OAuth Redirect URIs : 
         https://localhost/auth/facebook/callback ,
         https://harrixon.stream/auth/facebook/callback
+---
+
+Login : 
+local ok
+FB ok
+single user ok
+multi user looks ok
+
+
+ref : 
+@router.js : 
+    req.session.passport.user
+@socketRouter.js : 
+    socket.session.passport.user
+    socket.session.passport.roomID 
+
+---
+
+Chat room :
+1 socket session
+    1 namespace
+        emit stuf according to sender
+            msgBlk = {
+                sender: sender,
+                msg: msg
+            }
+
+n socket session
+    1 namespace
+        msg

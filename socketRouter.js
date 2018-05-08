@@ -2,34 +2,36 @@ class SocketRouter {
     constructor(io, redisClient) {
         this.io = io;
         this.redisClient = redisClient;
-        this.chatroomName = "";
-        this.user = "";
     }
 
     router() {
         this.io.on('connection', (socket) => {
-            console.log('a user has connected to our socket.io server');
-            console.log('this is from socket.io : \n', socket.session.passport);
+            let passportUser = socket.session.passport
+            socket.session.passport.roomID = "";
 
-            if (!socket.session.passport) {
+            console.log('this is from socket.io : \n', passportUser);
+            console.log("================")
+
+            if (!passportUser) {
                 socket.emit('unauthorized');
             } else {
-                this.user = socket.session.passport.user;
-                // console.log(this.user);  // same user obj from db
-
-                socket.on("subscribe", room => {
-                    if (this.chatroomName !== room) {
-                        this.chatroomName = room;
+                socket.on("subscribe", roomID => {
+                    if (socket.session.passport.roomID !== roomID) {
+                        socket.session.passport.roomID = roomID;
                         this.onJoinRoom(socket);
                     }
                 });
 
                 socket.on("chat message", msg => {
-                    console.log('new msg')
                     this.onMsgReceive(socket, msg);
                 });
 
+                socket.on("leaveRm", msg => {
+                    this.onLeaveRoom(socket);
+                })
+
                 socket.on('disconnect', () => {
+                    // socket.session.passport.user == undefined
                     this.onDisconnect();
                 });
             }
@@ -37,41 +39,59 @@ class SocketRouter {
     }
 
     onJoinRoom(socket) {
-        socket.join(this.chatroomName);
-        console.log(`a user has joined room: ${this.chatroomName}`);
-        this.io.to(this.chatroomName).emit('join room', `new user in room: ${this.chatroomName}.`);
+        let roomID = socket.session.passport.roomID;
+        let email = socket.session.passport.user.email;
 
+        // join rm
+        socket.join(roomID);
+        console.log(`${email} joined room: ${roomID}.`);
+
+        // emit event to whole chat rm
+        this.io.in(roomID).emit('join room', `${email} joined room: ${roomID}.`);
+
+        // fetch old msg for this user
         this.fetchMsg(socket, 0);
     }
 
+    onLeaveRoom(socket) {
+        // leave rm , remove roomID from session
+        socket.leave(socket.session.passport.roomID);
+        socket.session.passport.roomID = "";
+    }
+
     onMsgReceive(socket, msg) {
-        let storeMsg = `${this.user.email} : ${msg}`;
-        this.redisClient.lpush(this.chatroomName, storeMsg, (err, data) => {
+        let roomID = socket.session.passport.roomID;
+        let email = socket.session.passport.user.email;
+        let storeMsg = { user: email, msg : msg };
+
+        // save msg to redis
+        this.redisClient.lpush(roomID, JSON.stringify(storeMsg), (err, data) => {
             if (err) { throw err; }
         });
-        // console.log(storeMsg);
-        // console.log(this.chatroomName);
-        this.io.to(this.chatroomName).emit('chat message', storeMsg);
+        console.log(storeMsg);
+
+        // emit msg to rm
+        this.io.to(roomID).emit('chat message', storeMsg);
+        // socket.in(this.chatroomName).emit('chat message', storeMsg);
     }
 
     fetchMsg(socket, count) {
-        this.redisClient.lrange(this.chatroomName, count, count + 10, (err, messages) => {
+        let roomID = socket.session.passport.roomID;
+
+        // fetch msg by request from redis
+        this.redisClient.lrange(roomID, count, count + 10, (err, messages) => {
             if (err) {
                 console.log(err);
                 this.io.emit('read chat error');
                 return;
             }
             messages.reverse();
-            // let msgBlock = {
-            //     user: this.user,
-            //     msg: messages
-            // };
-            this.io.to(this.chatroomName).emit('old message', messages);
+            this.io.to(roomID).emit('old message', messages);
+            // socket.to(socket.id).emit('old message', messages);
         });
     }
 
     onDisconnect() {
-        this.chatroomName = "";
         console.log('a user left us');
     }
 }
